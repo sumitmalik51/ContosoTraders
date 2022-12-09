@@ -37,7 +37,7 @@ env:
   PRODUCT_IMAGES_STORAGE_ACCOUNT_NAME: contosotradersimg
   PRODUCT_LIST_CONTAINER_NAME: product-list
   PRODUCTS_CDN_ENDPOINT_NAME: contoso-traders-images
-  RESOURCE_GROUP_NAME: contoso-traders-rg${{ env.RESOURCE_GROUP_NAME }}
+  RESOURCE_GROUP_NAME: contoso-traders-
   STORAGE_ACCOUNT_NAME: contosotradersimg
   UI_CDN_ENDPOINT_NAME: contoso-traders-ui2
   UI_STORAGE_ACCOUNT_NAME: contosotradersui2
@@ -58,7 +58,7 @@ jobs:
         uses: azure/CLI@v1
         id: extract-acr-password
         with:
-          inlineScript: echo "acrPassword"="$(az acr credential show -n ${{ env.ACR_NAME }}${{ secrets.ENVIRONMENT }} -g ${{ env.RESOURCE_GROUP_NAME }} --query "passwords[0].value" --output tsv)" >> $GITHUB_OUTPUT
+          inlineScript: echo "acrPassword"="$(az acr credential show -n ${{ env.ACR_NAME }}${{ secrets.ENVIRONMENT }} -g ${{ env.RESOURCE_GROUP_NAME }}${{ secrets.ENVIRONMENT }} --query "passwords[0].value" --output tsv)" >> $GITHUB_OUTPUT
       - name: azure container registry login
         uses: azure/docker-login@v1
         with:
@@ -74,7 +74,7 @@ jobs:
         with:
           inlineScript: |
             az config set extension.use_dynamic_install=yes_without_prompt
-            az containerapp update -n ${{ env.CARTS_ACA_NAME }}${{ secrets.ENVIRONMENT }} -g ${{ env.RESOURCE_GROUP_NAME }} --image ${{ env.ACR_NAME }}${{ secrets.ENVIRONMENT }}.azurecr.io/${{ env.CARTS_ACR_REPOSITORY_NAME }}:${{ github.sha }}
+            az containerapp update -n ${{ env.CARTS_ACA_NAME }}${{ secrets.ENVIRONMENT }} -g ${{ env.RESOURCE_GROUP_NAME }}${{ secrets.ENVIRONMENT }} --image ${{ env.ACR_NAME }}${{ secrets.ENVIRONMENT }}.azurecr.io/${{ env.CARTS_ACR_REPOSITORY_NAME }}:${{ github.sha }}
 
   deploy-products-api:
     runs-on: ubuntu-latest
@@ -93,7 +93,7 @@ jobs:
         uses: azure/CLI@v1
         id: extract-acr-password
         with:
-          inlineScript: echo "acrPassword"="$(az acr credential show -n ${{ env.ACR_NAME }}${{ secrets.ENVIRONMENT }} -g ${{ env.RESOURCE_GROUP_NAME }} --query "passwords[0].value" --output tsv)" >> $GITHUB_OUTPUT
+          inlineScript: echo "acrPassword"="$(az acr credential show -n ${{ env.ACR_NAME }}${{ secrets.ENVIRONMENT }} -g ${{ env.RESOURCE_GROUP_NAME }}${{ secrets.ENVIRONMENT }} --query "passwords[0].value" --output tsv)" >> $GITHUB_OUTPUT
       - name: azure container registry login
         uses: azure/docker-login@v1
         with:
@@ -107,7 +107,7 @@ jobs:
       - name: set aks context
         uses: azure/aks-set-context@v3
         with:
-          resource-group: ${{ env.RESOURCE_GROUP_NAME }}
+          resource-group: ${{ env.RESOURCE_GROUP_NAME }}${{ secrets.ENVIRONMENT }}
           cluster-name: ${{ env.AKS_CLUSTER_NAME }}${{ secrets.ENVIRONMENT }}
       - name: setup kubectl
         uses: azure/setup-kubectl@v3
@@ -122,7 +122,7 @@ jobs:
         uses: azure/CLI@v1
         id: get-managedIdentityClientId
         with:
-          inlineScript: echo "managedIdentityClientId"="$(az identity show -g ${{ env.RESOURCE_GROUP_NAME }} --name ${{ env.USER_ASSIGNED_MANAGED_IDENTITY_NAME }}${{ secrets.ENVIRONMENT }} --query "clientId" -o tsv)" >> $GITHUB_OUTPUT
+          inlineScript: echo "managedIdentityClientId"="$(az identity show -g ${{ env.RESOURCE_GROUP_NAME }}${{ secrets.ENVIRONMENT }} --name ${{ env.USER_ASSIGNED_MANAGED_IDENTITY_NAME }}${{ secrets.ENVIRONMENT }} --query "clientId" -o tsv)" >> $GITHUB_OUTPUT
       - name: create kubernetes secret (kv endpoint)
         uses: Azure/k8s-create-secret@v3.0
         with:
@@ -162,7 +162,7 @@ jobs:
       # create the ingress controller
       - name: create ingress controller
         run: |
-          az aks get-credentials --resource-group ${{ env.RESOURCE_GROUP_NAME }} --name ${{ env.AKS_CLUSTER_NAME }}${{ secrets.ENVIRONMENT }}
+          az aks get-credentials --resource-group ${{ env.RESOURCE_GROUP_NAME }}${{ secrets.ENVIRONMENT }} --name ${{ env.AKS_CLUSTER_NAME }}${{ secrets.ENVIRONMENT }}
           ${{ steps.install-helm.outputs.helm-path }} repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
           ${{ steps.install-helm.outputs.helm-path }} repo update
           ${{ steps.install-helm.outputs.helm-path }} upgrade --install nginx-ingress ingress-nginx/ingress-nginx \
@@ -190,7 +190,7 @@ jobs:
           force: true
       - name: install cert-manager
         run: |
-          az aks get-credentials --resource-group ${{ env.RESOURCE_GROUP_NAME }} --name ${{ env.AKS_CLUSTER_NAME }}${{ secrets.ENVIRONMENT }}
+          az aks get-credentials --resource-group ${{ env.RESOURCE_GROUP_NAME }}${{ secrets.ENVIRONMENT }} --name ${{ env.AKS_CLUSTER_NAME }}${{ secrets.ENVIRONMENT }}
           kubectl apply --validate=false -f https://github.com/cert-manager/cert-manager/releases/download/v1.9.1/cert-manager.yaml
       - name: apply clusterIssuer manifest
         uses: Azure/k8s-deploy@v4
@@ -275,4 +275,4 @@ jobs:
       - name: purge CDN endpoint
         uses: azure/CLI@v1
         with:
-          inlineScript: az cdn endpoint purge --no-wait --content-paths '/*' -n '${{ env.UI_CDN_ENDPOINT_NAME }}${{ secrets.ENVIRONMENT }}' -g '${{ env.RESOURCE_GROUP_NAME }}' --profile-name '${{ env.CDN_PROFILE_NAME }}${{ secrets.ENVIRONMENT }}'
+          inlineScript: az cdn endpoint purge --no-wait --content-paths '/*' -n '${{ env.UI_CDN_ENDPOINT_NAME }}${{ secrets.ENVIRONMENT }}' -g '${{ env.RESOURCE_GROUP_NAME }}${{ secrets.ENVIRONMENT }}' --profile-name '${{ env.CDN_PROFILE_NAME }}${{ secrets.ENVIRONMENT }}'
