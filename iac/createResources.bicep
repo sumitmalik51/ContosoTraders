@@ -10,9 +10,8 @@ targetScope = 'resourceGroup'
 @description('A unique environment name (max 6 characters, alphanumeric only).')
 param environment string
 
-@secure()
-@description('A password which will be set on all SQL Azure DBs.')
-param sqlPassword string // @TODO: Obviously, we need to fix this!
+
+param sqlPassword string
 
 param resourceLocation string = resourceGroup().location
 
