@@ -43,7 +43,7 @@ env:
   UI_STORAGE_ACCOUNT_NAME: contosotradersui2
   USER_ASSIGNED_MANAGED_IDENTITY_NAME: contoso-traders-mi-kv-access
 
-
+jobs:
   deploy-carts-api:
     runs-on: ubuntu-latest
     needs: provision-infrastructure
